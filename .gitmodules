@@ -1,0 +1,3 @@
+[submodule "scrape_kit"]
+	path = scrape_kit
+	url = git@github.com:masroore/scraper-kit.git
