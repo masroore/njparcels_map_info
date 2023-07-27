@@ -5,6 +5,7 @@ import os.path
 import orjson as json
 import yarl
 
+import localdb
 from scrape_kit.src import utils
 from scrape_kit.src.proxies import RotatingProxyPool
 from scrape_kit.src.sessions import SessionManager
@@ -62,10 +63,11 @@ def handle_downloaded_resource(response: TaskResult, _: AsyncWebWorker):
 
 def check_apns() -> list[str]:
     checked = []
-    files = [os.path.basename(x) for x in glob.glob(OUTPUT_FOLDER + "/*.json")]
+    # files = [os.path.basename(x) for x in glob.glob(OUTPUT_FOLDER + "/*.json")]
+    db_apns = [x for x in PropertyInfo.select("pin")]
 
     for apn in APNS_TO_SCRAPE:
-        if apn not in files:
+        if apn not in db_apns:
             checked.append(apn)
 
     return checked
@@ -73,7 +75,7 @@ def check_apns() -> list[str]:
 
 if __name__ == "__main__":
     init_db()
-    concurrency = 100
+    concurrency = 200
     timer: Timer = Timer()
     sessions: SessionManager = SessionManager()
     proxies: RotatingProxyPool = RotatingProxyPool(
