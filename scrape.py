@@ -3,6 +3,7 @@ import glob
 import os.path
 
 import orjson as json
+import yarl
 
 from scrape_kit.src import utils
 from scrape_kit.src.proxies import RotatingProxyPool
@@ -10,31 +11,35 @@ from scrape_kit.src.sessions import SessionManager
 from scrape_kit.src.timer import Timer
 from scrape_kit.src.web.task import TaskResult
 from scrape_kit.src.web.worker import AsyncWebWorker
-from .batch_loader import BatchedDownloader
+from batch_loader import BatchedDownloader
+from localdb import PropertyInfo, init_db
 
 APNS_TO_SCRAPE = utils.fget_lines("./apns.txt")
-OUTPUT_FOLDER = os.path.abspath("./storage/")
+OUTPUT_FOLDER = os.path.abspath("./storage/njparcels/")
 ALL_DATA = []
 
 
 def urls_to_scrape(apns: list[str]) -> list[str]:
     urls = []
     for apn in apns:
-        urls.append(
-            "https://cache.njparcels.com/attributes/" + apn + "?owner=1&assessment=1"
+        url = (
+            f"https://cache.njparcels.com/attributes/v1.0/nj/{apn}?owner=1&assessment=1"
         )
+        urls.append(url)
     return urls
 
 
 def process_json_object(data: dict, apn: str):
+    row = PropertyInfo.create(**data)
+    return
     utils.fputb(
-        f"{OUTPUT_FOLDER}/{apn}.json", json.dumps(data, option=json.OPT_INDENT_2)
+        f"{OUTPUT_FOLDER}/{apn}.json", json.dumps(data, option=json.OPT_SORT_KEYS)
     )
 
 
 def handle_downloaded_resource(response: TaskResult, _: AsyncWebWorker):
     global timer
-    apn = os.path.basename(response.url)
+    apn = yarl.URL(response.url).name
 
     if response.is_error or response.status_code not in [200, 404]:
         utils.croak(
@@ -67,18 +72,22 @@ def check_apns() -> list[str]:
 
 
 if __name__ == "__main__":
-    concurrency = 150
+    init_db()
+    concurrency = 100
     timer: Timer = Timer()
     sessions: SessionManager = SessionManager()
     proxies: RotatingProxyPool = RotatingProxyPool(
         "p.webshare.io:80:qxerhmfs-rotate:odvgwubmbjti",
         concurrency=concurrency,
     )
+    # print(proxies.pick());exit(0)
     workers: AsyncWebWorker = AsyncWebWorker(concurrency, proxies, sessions, timer)
     workers.set_result_available_hook(handle_downloaded_resource)
 
     loader = BatchedDownloader(workers=workers, concurrency=concurrency)
+    utils.croak("Checking APNs...")
     apns = check_apns()
+    utils.croak("Generating URLs...")
     loader.urls = urls_to_scrape(apns)
     timer.start()
     loader.run()
