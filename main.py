@@ -65,11 +65,13 @@ def check_apns() -> list[str]:
     checked = []
     # files = [os.path.basename(x) for x in glob.glob(OUTPUT_FOLDER + "/*.json")]
     db_apns = [x for x in PropertyInfo.select(PropertyInfo.pin).scalars()]
+    utils.croak(f"Found {len(db_apns)} rows in database")
 
     for apn in APNS_TO_SCRAPE:
         if apn not in db_apns:
             checked.append(apn)
 
+    utils.croak(f"{len(checked)} APNs to scrape")
     return checked
 
 
