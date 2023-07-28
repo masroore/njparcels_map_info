@@ -75,7 +75,7 @@ def check_apns() -> list[str]:
 
 if __name__ == "__main__":
     init_db()
-    concurrency = 300
+    concurrency = 100
     timer: Timer = Timer()
     sessions: SessionManager = SessionManager()
     proxies: RotatingProxyPool = RotatingProxyPool(
