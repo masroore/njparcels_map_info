@@ -64,7 +64,7 @@ def handle_downloaded_resource(response: TaskResult, _: AsyncWebWorker):
 def check_apns() -> list[str]:
     checked = []
     # files = [os.path.basename(x) for x in glob.glob(OUTPUT_FOLDER + "/*.json")]
-    db_apns = [x for x in PropertyInfo.select("pin")]
+    db_apns = [x for x in PropertyInfo.select(PropertyInfo.pin).scalars()]
 
     for apn in APNS_TO_SCRAPE:
         if apn not in db_apns:
@@ -75,7 +75,7 @@ def check_apns() -> list[str]:
 
 if __name__ == "__main__":
     init_db()
-    concurrency = 200
+    concurrency = 300
     timer: Timer = Timer()
     sessions: SessionManager = SessionManager()
     proxies: RotatingProxyPool = RotatingProxyPool(
