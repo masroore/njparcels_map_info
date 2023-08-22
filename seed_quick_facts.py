@@ -86,6 +86,10 @@ with open("./assets/quick_facts.csv", "r") as fp:
         qf.land_value = row["land_value"]
         qf.net_value = row["net_value"]
 
+        if prop[5]:
+            # redacted. create owner record?
+            pass
+
         qf.property_id = prop[0]
         qf.sale_date = prop[7]
         qf.sale_price = prop[25]
