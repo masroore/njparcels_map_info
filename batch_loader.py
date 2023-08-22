@@ -38,7 +38,7 @@ class BatchedDownloader:
             url = work_queue.pop()
             batch_count += 1
             item = TaskRequest(
-                url=url, proxy_disabled=True, session_id="", session_disabled=True
+                url=url, proxy_disabled=False, session_id="", session_disabled=True
             )
             self._tasks.append(item)
 

@@ -1,19 +1,17 @@
 # Copyright 2023 Dr. Masroor Ehsan
-import glob
 import os.path
 
 import orjson as json
 import yarl
 
-import localdb
+from batch_loader import BatchedDownloader
+from localdb import PropertyInfo, init_db
 from scrape_kit.src import utils
 from scrape_kit.src.proxies import RotatingProxyPool
 from scrape_kit.src.sessions import SessionManager
 from scrape_kit.src.timer import Timer
 from scrape_kit.src.web.task import TaskResult
 from scrape_kit.src.web.worker import AsyncWebWorker
-from batch_loader import BatchedDownloader
-from localdb import PropertyInfo, init_db
 
 APNS_TO_SCRAPE = utils.fget_lines("./apns.txt")
 OUTPUT_FOLDER = os.path.abspath("./storage/njparcels/")
@@ -64,18 +62,17 @@ def handle_downloaded_resource(response: TaskResult, _: AsyncWebWorker):
 def check_apns() -> list[str]:
     checked = []
     # files = [os.path.basename(x) for x in glob.glob(OUTPUT_FOLDER + "/*.json")]
-    db_apns = [x for x in PropertyInfo.select("pin")]
+    db_apns = [x for x in PropertyInfo.select(PropertyInfo.pin).scalars()]
+    utils.croak(f"Found {len(db_apns)} rows in database")
+    checked = set(APNS_TO_SCRAPE) - set(db_apns)
+    utils.croak(f"{len(checked)} APNs to scrape")
 
-    for apn in APNS_TO_SCRAPE:
-        if apn not in db_apns:
-            checked.append(apn)
-
-    return checked
+    return list(checked)
 
 
 if __name__ == "__main__":
     init_db()
-    concurrency = 200
+    concurrency = 100
     timer: Timer = Timer()
     sessions: SessionManager = SessionManager()
     proxies: RotatingProxyPool = RotatingProxyPool(
