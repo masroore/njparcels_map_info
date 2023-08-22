@@ -17,6 +17,9 @@ class GeometryField(Field):
     def python_value(self, value):
         return fn.ST_AsGeoJSON(value)
 
+    def lat(self, value):
+        return fn.ST_X(value)
+
 
 class Property(BaseModel):
     absentee = IntegerField(null=True)
