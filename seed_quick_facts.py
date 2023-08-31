@@ -64,11 +64,14 @@ def get_property(conn, gis_pin: str) -> tuple:
         return data
 
 
-def sanitize_data(s: str) -> str:
+def sanitize_data(s: str, up_case: bool = False) -> str:
     if not s:
         return None
 
-    return " ".join(s.split()).strip()
+    s = " ".join(s.split()).strip()
+    if up_case:
+        s = s.upper()
+    return s
 
 
 def null_is_zero(d):
@@ -87,14 +90,14 @@ with open("./assets/quick_facts.csv", "r") as fp:
 
         qf = njpr_db.PropertyQuickFacts()
         qf.gis_pin = row["gis_pin"]
-        qf.property_location = sanitize_data(row["property_location"])
+        qf.property_location = sanitize_data(row["property_location"], up_case=True)
         qf.additional_lots = sanitize_data(row["additional_lots"])
+        qf.owner_name = sanitize_data(row["owner_name"], up_case=True)
+        qf.owner_address = sanitize_data(row["owner_address"], up_case=True)
+        qf.owner_city = sanitize_data(row["owner_city"], up_case=True)
+        qf.owner_zip = row["owner_zip"]
         qf.deed_book = row["deed_book"]
         qf.deed_page = row["deed_page"]
-        qf.owner_address = sanitize_data(row["owner_address"])
-        qf.owner_name = sanitize_data(row["owner_name"])
-        qf.owner_zip = row["owner_zip"]
-        qf.owner_city = sanitize_data(row["owner_city"])
         qf.improvement_value = row["improvement_value"]
         qf.land_value = row["land_value"]
         qf.net_value = row["net_value"]
