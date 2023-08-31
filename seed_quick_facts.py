@@ -64,6 +64,19 @@ def get_property(conn, gis_pin: str) -> tuple:
         return data
 
 
+def sanitize_data(s: str) -> str:
+    if not s:
+        return None
+
+    return " ".join(s.split()).strip()
+
+
+def null_is_zero(d):
+    if d == 0:
+        return None
+    return d
+
+
 with open("./assets/quick_facts.csv", "r") as fp:
     reader = csv.DictReader(fp)
     row: dict
@@ -74,27 +87,27 @@ with open("./assets/quick_facts.csv", "r") as fp:
 
         qf = njpr_db.PropertyQuickFacts()
         qf.gis_pin = row["gis_pin"]
-        qf.property_location = row["property_location"]
-        qf.additional_lots = row["additional_lots"]
+        qf.property_location = sanitize_data(row["property_location"])
+        qf.additional_lots = sanitize_data(row["additional_lots"])
         qf.deed_book = row["deed_book"]
         qf.deed_page = row["deed_page"]
-        qf.owner_address = row["owner_address"]
-        qf.owner_name = row["owner_name"]
+        qf.owner_address = sanitize_data(row["owner_address"])
+        qf.owner_name = sanitize_data(row["owner_name"])
         qf.owner_zip = row["owner_zip"]
-        qf.owner_city = row["owner_city"]
+        qf.owner_city = sanitize_data(row["owner_city"])
         qf.improvement_value = row["improvement_value"]
         qf.land_value = row["land_value"]
         qf.net_value = row["net_value"]
 
-        if prop[5]:
+        if prop[5] and qf.owner_name:
             # redacted. create owner record?
             pass
 
         qf.property_id = prop[0]
         qf.sale_date = prop[7]
-        qf.sale_price = prop[25]
-        qf.sq_ft = prop[6]
-        qf.acreage = prop[19]
+        qf.sale_price = null_is_zero(prop[25])
+        qf.sq_ft = null_is_zero(prop[6])
+        qf.acreage = null_is_zero(prop[19])
         qf.property_class = prop[20]
         qf.deed_book = prop[8]
         qf.deed_page = prop[9]
@@ -102,9 +115,9 @@ with open("./assets/quick_facts.csv", "r") as fp:
         qf.county_name = prop[14]
         qf.municipality_id = prop[15]
         qf.municipality_name = prop[13]
-        qf.improvement_value = prop[11]
-        qf.land_value = prop[10]
-        qf.net_value = prop[12]
+        qf.improvement_value = null_is_zero(prop[11])
+        qf.land_value = null_is_zero(prop[10])
+        qf.net_value = null_is_zero(prop[12])
         qf.lat = prop[23]
         qf.lng = prop[24]
 
