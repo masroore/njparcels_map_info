@@ -152,6 +152,7 @@ class PropertyQuickFacts(BaseModel):
     owner_id = IntegerField(null=True)
     owner_name = CharField(null=True)
     owner_zip = CharField(null=True)
+    owner_zip4 = CharField(null=True)
     property_class = CharField(null=True)
     property_id = IntegerField(unique=True)
     property_location = CharField(null=True)

@@ -80,6 +80,17 @@ def null_is_zero(d):
     return d
 
 
+def zip_parse(s: str) -> tuple[str, str]:
+    if len(s) > 5:
+        zip = s[:5]
+        zip_4 = s[5:].zfill(4)
+    else:
+        zip = s.zfill(5)
+        zip_4 = None
+
+    return zip, zip_4
+
+
 with open("./assets/quick_facts.csv", "r") as fp:
     reader = csv.DictReader(fp)
     row: dict
@@ -88,6 +99,9 @@ with open("./assets/quick_facts.csv", "r") as fp:
         if not prop:
             continue
 
+        zip, zip4 = zip_parse(row["owner_zip"])
+        # print(row["owner_zip"], zip, zip4)
+
         qf = njpr_db.PropertyQuickFacts()
         qf.gis_pin = row["gis_pin"]
         qf.property_location = sanitize_data(row["property_location"], up_case=True)
@@ -95,7 +109,8 @@ with open("./assets/quick_facts.csv", "r") as fp:
         qf.owner_name = sanitize_data(row["owner_name"], up_case=True)
         qf.owner_address = sanitize_data(row["owner_address"], up_case=True)
         qf.owner_city = sanitize_data(row["owner_city"], up_case=True)
-        qf.owner_zip = row["owner_zip"]
+        qf.owner_zip = zip
+        qf.owner_zip4 = zip4
         qf.deed_book = row["deed_book"]
         qf.deed_page = row["deed_page"]
         qf.improvement_value = row["improvement_value"]
